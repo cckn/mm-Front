@@ -2,10 +2,10 @@ import React from 'react'
 
 import Layout from '../comps/MyLayout'
 
-const Index: React.FC = () => (
+const About: React.FC = () => (
   <Layout>
-    <p>Hello Next.js</p>
+    <p>This page is About</p>
   </Layout>
 )
 
-export default Index
+export default About

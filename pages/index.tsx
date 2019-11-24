@@ -1,36 +1,56 @@
-import Layout from '../components/MyLayout'
-import Link from 'next/link'
-import fetch from 'isomorphic-unfetch'
+import React, { useCallback } from 'react'
+import { useObserver, useLocalStore } from 'mobx-react'
+
+import { postStore, userStore } from '../store'
 import { NextPage } from 'next'
-import { entry } from './index.types'
 
-interface show {
-  id: string
-  name: string
+const App: NextPage = () => {
+  console.log(userStore)
+
+  const state = useLocalStore(() => ({
+    name: '',
+    password: '',
+    onChangeName(e: any) {
+      this.name = e.target.value
+    },
+    onChangePassword(e: any) {
+      this.password = e.target.value
+    },
+  }))
+
+  const onClick = useCallback(() => {
+    userStore.logIn({
+      nickname: 'zerocho',
+      password: '비밀번호',
+    })
+  }, [])
+
+  const onLogout = useCallback(() => {
+    userStore.logOut()
+  }, [])
+
+  return useObserver(() => (
+    <div>
+      {userStore.isLoggingIn ? (
+        <div>로그인 중</div>
+      ) : userStore.data ? (
+        <div>로그인</div>
+      ) : (
+        '로그인 해주세요.'
+      )}
+      {!userStore.data ? (
+        <button onClick={onClick}>로그인</button>
+      ) : (
+        <button onClick={onLogout}>로그아웃</button>
+      )}
+      <input value={state.name} onChange={state.onChangeName} />
+      <input
+        value={state.password}
+        type="password"
+        onChange={state.onChangePassword}
+      />
+    </div>
+  ))
 }
 
-const Index: NextPage<{ shows: show[] }> = (props) => (
-  <Layout>
-    <h1>Batmat TV Shows</h1>
-    <ul>
-      {props.shows.map((show) => (
-        <li key={show.id}>
-          <Link href="/p/[id]" as={`/p/${show.id}`}>
-            <a>{show.name}</a>
-          </Link>
-        </li>
-      ))}
-    </ul>
-  </Layout>
-)
-
-Index.getInitialProps = async function() {
-  const res = await fetch('https://api.tvmaze.com/search/shows?q=batman')
-  const data = await res.json()
-
-  console.log(`Show data fetched. Count: ${data.length}`)
-
-  return { shows: data.map((entry: entry) => entry.show) }
-}
-
-export default Index
+export default App
